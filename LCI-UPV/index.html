@@ -1,0 +1,495 @@
+<html lang="en" data-theme="light"><head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPV Dashboard Tool</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/thin/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/light/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/bold/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/fill/style.css"><link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/duotone/style.css">
+    <style>
+        /* --- General Variables & Reset --- */
+        :root {
+            --bg-color: #f4f7fe;
+            --header-bg: rgba(255, 255, 255, 0.8);
+            --card-bg: #ffffff;
+            --text-primary: #1a202c;
+            --text-secondary: #5a677d;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(149, 157, 165, 0.1);
+            --primary-color: #4A90E2;
+            --primary-hover: #357ABD;
+            --upload-border: #cbd5e0;
+            --upload-bg: #f7fafc;
+            
+            --good-color: #27AE60;
+            --good-bg: rgba(39, 174, 96, 0.1);
+            --medium-color: #F39C12;
+            --medium-bg: rgba(243, 156, 18, 0.1);
+            --doubtful-color: #E74C3C;
+            --doubtful-bg: rgba(231, 76, 60, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #1a202c;
+            --header-bg: rgba(26, 32, 44, 0.8);
+            --card-bg: #2d3748;
+            --text-primary: #f7fafc;
+            --text-secondary: #a0aec0;
+            --border-color: #4a5568;
+            --shadow-color: rgba(0, 0, 0, 0.2);
+            --upload-border: #4a5568;
+            --upload-bg: #2d3748;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        #uploadView { display: flex; justify-content: center; align-items: center; width: 100%; min-height: 100vh; padding: 20px; }
+        .upload-container { max-width: 600px; width: 100%; background-color: var(--card-bg); border-radius: 24px; box-shadow: 0 20px 40px var(--shadow-color); padding: 48px; text-align: center; }
+        .upload-header { margin-bottom: 40px; }
+        .upload-title { font-size: 48px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; line-height: 1.1; }
+        .upload-subtitle { font-size: 20px; color: var(--text-secondary); font-weight: 400; }
+        .upload-area { border: 3px dashed var(--upload-border); border-radius: 16px; background-color: var(--upload-bg); padding: 60px 40px; margin-bottom: 32px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+        .upload-area:hover { border-color: var(--primary-color); background-color: rgba(74, 144, 226, 0.05); }
+        .upload-area.dragover { border-color: var(--primary-color); background-color: rgba(74, 144, 226, 0.1); transform: scale(1.02); }
+        .upload-icon { width: 64px; height: 64px; background-color: var(--primary-color); border-radius: 12px; margin: 0 auto 24px; display: flex; align-items: center; justify-content: center; font-size: 32px; color: white; }
+        .upload-text { font-size: 18px; color: var(--text-primary); margin-bottom: 20px; font-weight: 500; }
+        .choose-file-btn { background-color: var(--primary-color); color: white; border: none; padding: 14px 32px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; gap: 8px; }
+        .choose-file-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(74, 144, 226, 0.3); }
+        .file-info { font-size: 16px; color: var(--text-secondary); margin-top: 20px; padding: 16px; background-color: var(--upload-bg); border-radius: 8px; }
+        .file-selected { color: var(--primary-color); font-weight: 600; }
+        .hidden { display: none; }
+        .upload-footer { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--border-color); color: var(--text-secondary); font-size: 14px; }
+        .process-btn { background-color: #27AE60; color: white; border: none; padding: 16px 40px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 20px; display: none; }
+        .process-btn:hover { background-color: #219A52; transform: translateY(-2px); box-shadow: 0 8px 20px rgba(39, 174, 96, 0.3); }
+        .error-message { color: #E74C3C; background-color: rgba(231, 76, 60, 0.1); padding: 12px; border-radius: 8px; margin-top: 16px; display: none; }
+        @media (max-width: 768px) { .upload-container { padding: 32px 24px; } .upload-title { font-size: 36px; } .upload-subtitle { font-size: 18px; } .upload-area { padding: 40px 24px; } }
+
+        /* --- Dashboard View Styles --- */
+        #dashboardView { width: 100%; display: none; }
+        .dashboard-container { padding: 80px 24px 24px; max-width: 1600px; margin: 0 auto; }
+        .dashboard-header { position: fixed; top: 0; left: 0; right: 0; height: 64px; padding: 0 24px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; background-color: var(--header-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); z-index: 1000; transition: all 0.3s ease; }
+        .header-title { grid-column: 2 / 3; justify-self: center; display: flex; align-items: center; gap: 12px; font-size: 22px; font-weight: 600; }
+        .header-title i { font-size: 28px; color: var(--primary-color); }
+        .header-controls { grid-column: 3 / 4; justify-self: end; display: flex; align-items: center; gap: 16px; }
+        .back-btn { display: flex; align-items: center; gap: 8px; background-color: var(--primary-color); color: white; text-decoration: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; transition: all 0.3s ease; cursor: pointer; }
+        .back-btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        .theme-switcher { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 8px; border-radius: 8px; }
+        .theme-switcher .ph-sun { display: none; }
+        [data-theme="dark"] .theme-switcher .ph-sun { display: block; }
+        [data-theme="dark"] .theme-switcher .ph-moon { display: none; }
+        .dashboard-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 24px; }
+        .card { background-color: var(--card-bg); border-radius: 16px; box-shadow: 0 8px 16px var(--shadow-color); padding: 24px; transition: all 0.3s ease; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 14px 28px var(--shadow-color); }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+        .card-title { font-size: 18px; font-weight: 600; margin: 0; color: var(--text-primary); }
+        .card-subtitle { font-size: 14px; color: var(--text-secondary); margin: 4px 0 0; }
+        .grid-col-span-12 { grid-column: 1 / -1; }
+        @media (min-width: 640px) { .grid-col-span-md-6 { grid-column: span 6; } }
+        @media (min-width: 1024px) { .grid-col-span-lg-4 { grid-column: span 4; } .grid-col-span-lg-5 { grid-column: span 5; } .grid-col-span-lg-7 { grid-column: span 7; } }
+        .gauge-card-content { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        .gauge-wrapper { position: relative; width: 180px; height: 180px; }
+        .gauge-svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        .gauge-bg, .gauge-fg { fill: none; stroke-width: 20; stroke-linecap: round; }
+        .gauge-bg { stroke: var(--border-color); }
+        .gauge-fg { stroke: var(--primary-color); transition: stroke-dashoffset 1.5s ease-in-out, stroke 0.5s ease; }
+        .gauge-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }
+        .gauge-value { font-size: 36px; font-weight: 700; color: var(--text-primary); }
+        .gauge-label { font-size: 14px; color: var(--text-secondary); }
+        .gauge-quality-rating { font-weight: 600; font-size: 20px; margin-top: 16px; }
+        .summary-stack-container { display: flex; flex-direction: column; gap: 24px; }
+        .upv-summary-card { flex: 1; flex-direction: row; justify-content: space-between; align-items: center; }
+        .data-summary-card { flex: 3; }
+        .upv-summary-item { display: flex; align-items: center; gap: 16px; }
+        .upv-summary-icon { font-size: 24px; padding: 10px; border-radius: 50%; display: flex; }
+        .upv-summary-icon.good { color: var(--good-color); background-color: var(--good-bg); }
+        .upv-summary-icon.medium { color: var(--medium-color); background-color: var(--medium-bg); }
+        .upv-summary-info .stat-title { font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 2px;}
+        .upv-summary-info .stat-value { font-size: 24px; font-weight: 700; color: var(--text-primary); }
+        .data-summary-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px; height: 100%; justify-content: space-around; }
+        .data-summary-item { display: flex; justify-content: space-between; align-items: center; font-size: 16px; }
+        .data-summary-label { display: flex; align-items: center; gap: 10px; font-weight: 500; }
+        .data-summary-indicator { width: 10px; height: 10px; border-radius: 50%; }
+        .data-summary-value { font-weight: 600; font-size: 18px; color: var(--text-primary); }
+        .chart-container { position: relative; flex-grow: 1; min-height: 300px; width: 100%; }
+        .filters { display: flex; gap: 10px; flex-wrap: wrap; }
+        .filter-btn { background-color: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.3s; font-weight: 500; }
+        .filter-btn:hover { border-color: var(--primary-color); color: var(--primary-color); }
+        .filter-btn.active { background-color: var(--primary-color); color: white; border-color: var(--primary-color); }
+        .table-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 16px; }
+        .search-container { position: relative; }
+        .search-container i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); }
+        #searchInput { padding: 10px 10px 10px 36px; border: 1px solid var(--border-color); border-radius: 8px; background-color: var(--bg-color); color: var(--text-primary); width: 250px; transition: all 0.3s ease; }
+        #searchInput:focus { outline: none; border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2); }
+        .table-wrapper { overflow-x: auto; max-height: 400px; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+        th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border-color); color: var(--text-secondary); transition: background-color 0.3s; }
+        th { color: var(--text-primary); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; background-color: var(--bg-color); cursor: pointer; position: sticky; top: 0; z-index: 10; }
+        th .sort-indicator { display: inline-block; margin-left: 8px; opacity: 0.3; }
+        th.sorted .sort-indicator { opacity: 1; }
+        tbody tr:hover { background-color: var(--border-color); }
+        td { font-size: 14px; }
+        .rating-cell { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+        .rating-indicator { width: 10px; height: 10px; border-radius: 50%; }
+        .rating-good { color: var(--good-color); } .rating-good .rating-indicator { background-color: var(--good-color); }
+        .rating-medium { color: var(--medium-color); } .rating-medium .rating-indicator { background-color: var(--medium-color); }
+        .rating-doubtful { color: var(--doubtful-color); } .rating-doubtful .rating-indicator { background-color: var(--doubtful-color); }
+        .pagination-controls { display: flex; align-items: center; gap: 8px; }
+        .pagination-controls button { background: none; border: 1px solid var(--border-color); border-radius: 6px; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); }
+        .pagination-controls button:disabled { cursor: not-allowed; opacity: 0.5; }
+        .pagination-controls span { font-size: 14px; font-weight: 500; }
+        .dashboard-error-message { background-color: var(--doubtful-bg); color: var(--doubtful-color); padding: 20px; border-radius: 12px; text-align: center; margin: 20px auto; border: 1px solid var(--doubtful-color); max-width: 800px; }
+        @media (max-width: 768px) { .dashboard-grid { gap: 16px; } .card { grid-column: 1 / -1 !important; } .header-controls { gap: 8px; } .back-btn { padding: 6px 12px; font-size: 12px; } .header-title { font-size: 18px; } .header-title i { display: none; } }
+    </style>
+</head>
+<body style="padding: 0px;">
+    <div id="uploadView" style="display: none;">
+        <div class="upload-container"><div class="upload-header"><h1 class="upload-title">UPV Dashboard</h1><p class="upload-subtitle">Concrete Quality Analysis</p></div><div class="upload-area" id="uploadArea"><div class="upload-icon">📄</div><div class="upload-text">Drag &amp; drop your CSV file here or click to select</div><button class="choose-file-btn" id="chooseFileBtn">📁 Choose File</button><input type="file" id="fileInput" accept=".csv" class="hidden"></div><div class="file-info" id="fileInfo"><span class="file-selected">✅ upv_test_data.csv</span></div><div class="error-message" id="errorMessage" style="display: none;"></div><button class="process-btn" id="processBtn" style="display: inline-block;">Process Data &amp; View Dashboard</button><div class="upload-footer">© 2025 UPV Analysis Tool</div></div>
+    </div>
+
+    <div id="dashboardView" style="display: block;">
+        <header class="dashboard-header">
+            <div class="header-title"><i class="ph-bold ph-chart-line-up"></i><span>UPV Analysis Dashboard</span></div>
+            
+        </header>
+        <main class="dashboard-container" id="dashboardContainer">
+                <div class="dashboard-grid">
+                    <div class="card grid-col-span-12 grid-col-span-lg-4"><div class="card-header"><div><h2 class="card-title">Overall Concrete Quality</h2><p class="card-subtitle">Based on Average UPV</p></div></div><div class="gauge-card-content"><div class="gauge-wrapper"><svg class="gauge-svg" viewBox="0 0 100 100"><circle class="gauge-bg" cx="50" cy="50" r="40"></circle><circle class="gauge-fg" id="avg-upv-gauge" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2" style="stroke-dashoffset: 118.61; stroke: rgb(231, 76, 60);"></circle></svg><div class="gauge-text"><div class="gauge-value" id="avg-upv">2.64</div><div class="gauge-label">km/s</div></div></div><div class="gauge-quality-rating" id="quality-rating" style="color: rgb(231, 76, 60);">Doubtful</div></div></div>
+                    <div class="summary-stack-container grid-col-span-12 grid-col-span-lg-4"><div class="card upv-summary-card"><div class="upv-summary-item"><div class="upv-summary-icon good"><i class="ph-bold ph-trend-up"></i></div><div class="upv-summary-info"><div class="stat-title">Highest UPV</div><div class="stat-value" id="max-upv">3.8</div></div></div><div class="upv-summary-item"><div class="upv-summary-icon medium"><i class="ph-bold ph-trend-down"></i></div><div class="upv-summary-info"><div class="stat-title">Lowest UPV</div><div class="stat-value" id="min-upv">1.3</div></div></div></div><div class="card data-summary-card"><div class="card-header" style="margin-bottom: 10px;"><div><h2 class="card-title">Data Summary</h2></div></div><ul class="data-summary-list"><li class="data-summary-item"><span class="data-summary-label">Total Tests</span><span class="data-summary-value" id="total-tests">23</span></li><li class="data-summary-item"><span class="data-summary-label"><span class="data-summary-indicator" style="background-color: var(--good-color);"></span>Good</span><span class="data-summary-value" id="good-count">4</span></li><li class="data-summary-item"><span class="data-summary-label"><span class="data-summary-indicator" style="background-color: var(--medium-color);"></span>Medium</span><span class="data-summary-value" id="medium-count">6</span></li><li class="data-summary-item"><span class="data-summary-label"><span class="data-summary-indicator" style="background-color: var(--doubtful-color);"></span>Doubtful</span><span class="data-summary-value" id="doubtful-count">13</span></li></ul></div></div>
+                    <div class="card grid-col-span-12 grid-col-span-lg-4"><div class="card-header"><div><h2 class="card-title">Rating Distribution</h2><p class="card-subtitle">Proportion of quality ratings</p></div></div><div class="chart-container"><canvas id="distributionChart" width="365" height="300" style="display: block; box-sizing: border-box; touch-action: auto; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); height: 300px; width: 365px;"></canvas></div></div>
+                    
+                    <div class="card grid-col-span-12 grid-col-span-lg-7" id="upvChartCard"><div class="card-header"><div><h2 class="card-title">UPV Values by Location</h2><p class="card-subtitle">Click filters to segment data</p></div><div class="filters" id="filter-buttons"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="good">Good</button><button class="filter-btn" data-filter="medium">Medium</button><button class="filter-btn" data-filter="doubtful">Doubtful</button></div></div><div class="chart-container"><canvas id="upvChart" width="695" height="300" style="display: block; box-sizing: border-box; touch-action: auto; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); height: 300px; width: 695px;"></canvas></div><div id="upv-chart-legend" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 24px; margin-top: 15px; font-size: 14px; color: var(--text-secondary);">
+                    <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--good-color);"></span>Good (&gt;3.5 km/s)</span>
+                    <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--medium-color);"></span>Medium (3.0-3.5 km/s)</span>
+                    <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--doubtful-color);"></span>Doubtful (&lt;3.0 km/s)</span>
+                </div></div>
+                    
+                    <div class="card grid-col-span-12 grid-col-span-lg-5" id="correlationChartCard" style="display: flex;"><div class="card-header"><div><h2 class="card-title">Time vs UPV Correlation</h2><p class="card-subtitle">Drag to pan, scroll to zoom</p></div></div><div class="chart-container"><canvas id="correlationChart" width="475" height="332" style="display: block; box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-drag: none; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); height: 332px; width: 475px;"></canvas></div></div>
+
+                    <div class="card grid-col-span-12"><div class="card-header"><div><h2 class="card-title">Interactive Data Log</h2><p class="card-subtitle">Search, sort, and browse all test records</p></div></div><div class="table-controls"><div class="search-container"><i class="ph ph-magnifying-glass"></i><input type="text" id="searchInput" placeholder="Search records..."></div><div class="pagination-controls"><button id="prevPage" disabled=""><i class="ph ph-caret-left"></i></button><span id="pageInfo">Page 1 of 3</span><button id="nextPage"><i class="ph ph-caret-right"></i></button></div></div><div class="table-wrapper"><table id="dataTable"><thead><tr><th data-sort="sno" class="sorted">S.No <i class="sort-indicator ph ph-sort-ascending"></i></th><th data-sort="location">Location <i class="sort-indicator ph ph-sort-ascending"></i></th><th data-sort="upv">UPV (km/s) <i class="sort-indicator ph ph-sort-ascending"></i></th><th data-sort="time">Time (µs) <i class="sort-indicator ph ph-sort-ascending"></i></th><th data-sort="rating">Rating <i class="sort-indicator ph ph-sort-ascending"></i></th></tr></thead><tbody><tr><td>1</td><td>A-2</td><td>2.4</td><td>123.2</td><td><div class="rating-cell rating-doubtful"><span class="rating-indicator"></span><span>Doubtful</span></div></td></tr><tr><td>2</td><td>B-2</td><td>1.7</td><td>230.0</td><td><div class="rating-cell rating-doubtful"><span class="rating-indicator"></span><span>Doubtful</span></div></td></tr><tr><td>3</td><td>B-4</td><td>3.8</td><td>106.0</td><td><div class="rating-cell rating-good"><span class="rating-indicator"></span><span>Good</span></div></td></tr><tr><td>4</td><td>B-5a</td><td>2.6</td><td>123.0</td><td><div class="rating-cell rating-doubtful"><span class="rating-indicator"></span><span>Doubtful</span></div></td></tr><tr><td>5</td><td>A-7</td><td>1.5</td><td>275.0</td><td><div class="rating-cell rating-doubtful"><span class="rating-indicator"></span><span>Doubtful</span></div></td></tr><tr><td>6</td><td>B-9</td><td>3.4</td><td>119.0</td><td><div class="rating-cell rating-medium"><span class="rating-indicator"></span><span>Medium</span></div></td></tr><tr><td>7</td><td>D-9</td><td>1.8</td><td>220.0</td><td><div class="rating-cell rating-doubtful"><span class="rating-indicator"></span><span>Doubtful</span></div></td></tr><tr><td>8</td><td>C-10</td><td>3.7</td><td>122.0</td><td><div class="rating-cell rating-good"><span class="rating-indicator"></span><span>Good</span></div></td></tr><tr><td>9</td><td>D-10</td><td>3.0</td><td>135.0</td><td><div class="rating-cell rating-medium"><span class="rating-indicator"></span><span>Medium</span></div></td></tr><tr><td>10</td><td>E-6</td><td>1.4</td><td>323.7</td><td><div class="rating-cell rating-doubtful"><span class="rating-indicator"></span><span>Doubtful</span></div></td></tr></tbody></table></div></div>
+                </div></main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hammerjs@2.0.8"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+    
+    <script id="embeddedData" type="application/json">[{"sno":1,"member":"Column","location":"A-2","method":"In-Direct","distance":300,"time":123.2,"upv":2.4,"rating":"Doubtful","":""},{"sno":2,"member":"Column","location":"B-2","method":"In-Direct","distance":400,"time":230,"upv":1.7,"rating":"Doubtful","":""},{"sno":3,"member":"Column","location":"B-4","method":"Direct","distance":400,"time":106,"upv":3.8,"rating":"Good","":""},{"sno":4,"member":"Column","location":"B-5a","method":"Direct","distance":320,"time":123,"upv":2.6,"rating":"Doubtful","":""},{"sno":5,"member":"Column","location":"A-7","method":"In-Direct","distance":400,"time":275,"upv":1.5,"rating":"Doubtful","":""},{"sno":6,"member":"Column","location":"B-9","method":"Direct","distance":400,"time":119,"upv":3.4,"rating":"Medium","":""},{"sno":7,"member":"Column","location":"D-9","method":"Direct","distance":400,"time":220,"upv":1.8,"rating":"Doubtful","":""},{"sno":8,"member":"Column","location":"C-10","method":"Direct","distance":450,"time":122,"upv":3.7,"rating":"Good","":""},{"sno":9,"member":"Column","location":"D-10","method":"In-Direct","distance":400,"time":135,"upv":3,"rating":"Medium","":""},{"sno":10,"member":"Column","location":"E-6","method":"Direct","distance":440,"time":323.7,"upv":1.4,"rating":"Doubtful","":""},{"sno":11,"member":"Column","location":"E-2","method":"In-Direct","distance":400,"time":130,"upv":3.1,"rating":"Medium","":""},{"sno":12,"member":"Column","location":"E-5","method":"In-Direct","distance":200,"time":76.2,"upv":2.6,"rating":"Doubtful","":""},{"sno":13,"member":"Column","location":"E-9","method":"In-Direct","distance":400,"time":312,"upv":1.3,"rating":"Doubtful","":""},{"sno":14,"member":"Column","location":"D-3","method":"In-Direct","distance":400,"time":117.3,"upv":3.4,"rating":"Medium","":""},{"sno":15,"member":"Column","location":"A-3","method":"In-Direct","distance":400,"time":110,"upv":3.6,"rating":"Good","":""},{"sno":16,"member":"Column","location":"A-9","method":"In-Direct","distance":200,"time":98.7,"upv":2,"rating":"Doubtful","":""},{"sno":17,"member":"Beam","location":"Beam (C-7 & D-7)","method":"In-Direct","distance":400,"time":250,"upv":1.6,"rating":"Doubtful","":""},{"sno":18,"member":"Beam","location":"Beam (B-3 & C-3)","method":"In-Direct","distance":400,"time":160.8,"upv":2.5,"rating":"Doubtful","":""},{"sno":19,"member":"Beam","location":"Beam (D-1 & C-1)","method":"In-Direct","distance":400,"time":128.8,"upv":3.1,"rating":"Medium","":""},{"sno":20,"member":"Beam","location":"Beam (C-1 & C-2)","method":"In-Direct","distance":400,"time":165.5,"upv":2.4,"rating":"Doubtful","":""},{"sno":21,"member":"Beam","location":"Beam (A-4 & B-4)","method":"In-Direct","distance":400,"time":145.2,"upv":2.8,"rating":"Doubtful","":""},{"sno":22,"member":"Beam","location":"Beam (A-5a & B-5a)","method":"In-Direct","distance":400,"time":122,"upv":3.3,"rating":"Medium","":""},{"sno":23,"member":"Beam","location":"Beam (A-6 & B-6)","method":"In-Direct","distance":400,"time":109,"upv":3.7,"rating":"Good","":""}]</script>
+    
+    <script>
+        // --- GLOBAL STATE ---
+        const uploadView = document.getElementById('uploadView');
+        const dashboardView = document.getElementById('dashboardView');
+        let currentDashboardData = null;
+        let chartInstances = {};
+
+        // --- UPLOAD VIEW LOGIC ---
+        const fileInput = document.getElementById('fileInput');
+        fileInput.addEventListener('change', (e) => { if (e.target.files.length > 0) handleFile(e.target.files[0]); });
+        document.getElementById('uploadArea').addEventListener('click', () => fileInput.click());
+        document.getElementById('chooseFileBtn').addEventListener('click', (e) => { e.stopPropagation(); fileInput.click(); });
+        ['dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.getElementById('uploadArea').addEventListener(eventName, (e) => {
+                e.preventDefault(); e.stopPropagation();
+                e.target.closest('.upload-area').classList.toggle('dragover', eventName === 'dragover');
+                if (eventName === 'drop') handleFile(e.dataTransfer.files[0]);
+            }, false);
+        });
+        function handleFile(file) {
+            const fileInfo = document.getElementById('fileInfo');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.style.display = 'none';
+            if (!file || (!file.name.toLowerCase().endsWith('.csv'))) { showUploadError('Please select a valid CSV file.'); return; }
+            fileInfo.innerHTML = `<span class="file-selected">✅ ${file.name}</span>`;
+            document.getElementById('processBtn').style.display = 'inline-block';
+            document.getElementById('processBtn').onclick = () => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const parsedData = parseCSV(e.target.result);
+                        currentDashboardData = parsedData; 
+                        displayDashboard(parsedData, false);
+                    } catch (err) { showUploadError(err.message); }
+                };
+                reader.readAsText(file);
+            };
+        }
+        function showUploadError(message) {
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message; errorMessage.style.display = 'block';
+            document.getElementById('processBtn').style.display = 'none';
+            document.getElementById('fileInfo').innerHTML = 'No file selected. Please upload a CSV from the calculator.';
+        }
+        
+        // --- PARSING & DISPLAY LOGIC ---
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n'); if (lines.length < 2) throw new Error('CSV must have at least a header and one data row');
+            const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+            const data = []; const requiredColumns = ['sno', 'location', 'upv', 'time', 'rating'];
+            const missingColumns = requiredColumns.filter(col => !headers.includes(col)); if (missingColumns.length > 0) throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim()); if (values.length !== headers.length) continue;
+                const row = {};
+                headers.forEach((header, index) => {
+                    let value = values[index]; if (['sno', 'distance', 'time', 'upv'].includes(header)) { value = parseFloat(value); if (isNaN(value)) throw new Error(`Invalid number in row ${i+1}, column '${header}': ${values[index]}`); }
+                    row[header] = value;
+                });
+                if (row.upv <= 0 || row.upv > 10) throw new Error(`Invalid UPV value in row ${i+1}: ${row.upv}.`);
+                if (!['good', 'medium', 'doubtful'].includes(row.rating.toLowerCase())) throw new Error(`Invalid rating in row ${i+1}: ${row.rating}.`);
+                row.rating = row.rating.charAt(0).toUpperCase() + row.rating.slice(1).toLowerCase();
+                data.push(row);
+            }
+            if (data.length === 0) throw new Error("No valid data rows found in the CSV.");
+            return data;
+        }
+
+        function displayDashboard(testData, isStaticReport = false) {
+            uploadView.style.display = 'none';
+            dashboardView.style.display = 'block';
+            document.body.style.padding = '0';
+            
+            if (!isStaticReport) {
+                const controls = document.getElementById('headerControls');
+                if(controls) controls.style.display = 'flex';
+                document.getElementById('generateReportBtn').style.display = 'flex';
+            }
+            
+            initializeDashboardUI(testData, isStaticReport);
+        }
+
+        function showDashboardError(message) {
+            uploadView.style.display = 'none';
+            dashboardView.style.display = 'block';
+            document.body.style.padding = '0';
+            document.getElementById('dashboardContainer').innerHTML = `<div class="dashboard-error-message"><h3>⚠️ Error Loading Dashboard</h3><p>${message}</p></div>`;
+        }
+        
+        function initializeDashboardUI(testData, isStaticReport) {
+            document.getElementById('dashboardContainer').innerHTML = `
+                <div class="dashboard-grid">
+                    <div class="card grid-col-span-12 grid-col-span-lg-4"><div class="card-header"><div><h2 class="card-title">Overall Concrete Quality</h2><p class="card-subtitle">Based on Average UPV</p></div></div><div class="gauge-card-content"><div class="gauge-wrapper"><svg class="gauge-svg" viewBox="0 0 100 100"><circle class="gauge-bg" cx="50" cy="50" r="40"></circle><circle class="gauge-fg" id="avg-upv-gauge" cx="50" cy="50" r="40" stroke-dasharray="251.2" stroke-dashoffset="251.2"></circle></svg><div class="gauge-text"><div class="gauge-value" id="avg-upv">0.00</div><div class="gauge-label">km/s</div></div></div><div class="gauge-quality-rating" id="quality-rating">Calculating...</div></div></div>
+                    <div class="summary-stack-container grid-col-span-12 grid-col-span-lg-4"><div class="card upv-summary-card"><div class="upv-summary-item"><div class="upv-summary-icon good"><i class="ph-bold ph-trend-up"></i></div><div class="upv-summary-info"><div class="stat-title">Highest UPV</div><div class="stat-value" id="max-upv">0.0</div></div></div><div class="upv-summary-item"><div class="upv-summary-icon medium"><i class="ph-bold ph-trend-down"></i></div><div class="upv-summary-info"><div class="stat-title">Lowest UPV</div><div class="stat-value" id="min-upv">0.0</div></div></div></div><div class="card data-summary-card"><div class="card-header" style="margin-bottom: 10px;"><div><h2 class="card-title">Data Summary</h2></div></div><ul class="data-summary-list"><li class="data-summary-item"><span class="data-summary-label">Total Tests</span><span class="data-summary-value" id="total-tests">0</span></li><li class="data-summary-item"><span class="data-summary-label"><span class="data-summary-indicator" style="background-color: var(--good-color);"></span>Good</span><span class="data-summary-value" id="good-count">0</span></li><li class="data-summary-item"><span class="data-summary-label"><span class="data-summary-indicator" style="background-color: var(--medium-color);"></span>Medium</span><span class="data-summary-value" id="medium-count">0</span></li><li class="data-summary-item"><span class="data-summary-label"><span class="data-summary-indicator" style="background-color: var(--doubtful-color);"></span>Doubtful</span><span class="data-summary-value" id="doubtful-count">0</span></li></ul></div></div>
+                    <div class="card grid-col-span-12 grid-col-span-lg-4"><div class="card-header"><div><h2 class="card-title">Rating Distribution</h2><p class="card-subtitle">Proportion of quality ratings</p></div></div><div class="chart-container"><canvas id="distributionChart"></canvas></div></div>
+                    
+                    <div class="card grid-col-span-12 grid-col-span-lg-7" id="upvChartCard"><div class="card-header"><div><h2 class="card-title">UPV Values by Location</h2><p class="card-subtitle">Click filters to segment data</p></div><div class="filters" id="filter-buttons"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="good">Good</button><button class="filter-btn" data-filter="medium">Medium</button><button class="filter-btn" data-filter="doubtful">Doubtful</button></div></div><div class="chart-container"><canvas id="upvChart"></canvas></div><div id="upv-chart-legend" style="display: flex; justify-content: center; flex-wrap: wrap; gap: 12px 24px; margin-top: 15px; font-size: 14px; color: var(--text-secondary);"></div></div>
+                    
+                    <div class="card grid-col-span-12 grid-col-span-lg-5" id="correlationChartCard"><div class="card-header"><div><h2 class="card-title">Time vs UPV Correlation</h2><p class="card-subtitle">${isStaticReport ? '' : 'Drag to pan, scroll to zoom'}</p></div></div><div class="chart-container"><canvas id="correlationChart"></canvas></div></div>
+
+                    <div class="card grid-col-span-12"><div class="card-header"><div><h2 class="card-title">Interactive Data Log</h2><p class="card-subtitle">Search, sort, and browse all test records</p></div></div><div class="table-controls"><div class="search-container"><i class="ph ph-magnifying-glass"></i><input type="text" id="searchInput" placeholder="Search records..."></div><div class="pagination-controls"><button id="prevPage"><i class="ph ph-caret-left"></i></button><span id="pageInfo"></span><button id="nextPage"><i class="ph ph-caret-right"></i></button></div></div><div class="table-wrapper"><table id="dataTable"><thead></thead><tbody></tbody></table></div></div>
+                </div>`;
+            setupDashboardInteractions(testData, isStaticReport);
+        }
+
+        function setupDashboardInteractions(testData, isStaticReport) {
+            let state = { filter: 'all', searchTerm: '', sortColumn: 'sno', sortDirection: 'asc', currentPage: 1, itemsPerPage: 10 };
+            let currentUpvChartData = [];
+            
+            // --- MODIFIED FEATURE LOGIC START ---
+            const LAYOUT_THRESHOLD = 50;
+            const upvChartCard = document.getElementById('upvChartCard');
+            const correlationChartCard = document.getElementById('correlationChartCard');
+
+            /**
+             * Adjusts the chart layout based on the number of data points.
+             * If count > threshold, both charts become full-width and stack vertically.
+             * Otherwise, they revert to a side-by-side 7/5 column split.
+             * @param {number} dataCount The number of items currently in the UPV chart.
+             */
+            const adjustChartLayout = (dataCount) => {
+                if (!upvChartCard || !correlationChartCard) return;
+
+                if (dataCount > LAYOUT_THRESHOLD) {
+                    // EXPAND & STACK: Make both charts full-width. Grid will auto-flow them.
+                    upvChartCard.classList.remove('grid-col-span-lg-7');
+                    upvChartCard.classList.add('grid-col-span-lg-12');
+                    
+                    correlationChartCard.classList.remove('grid-col-span-lg-5');
+                    correlationChartCard.classList.add('grid-col-span-lg-12');
+                } else {
+                    // REVERT TO SIDE-BY-SIDE: Revert to the default 7/5 split.
+                    upvChartCard.classList.remove('grid-col-span-lg-12');
+                    upvChartCard.classList.add('grid-col-span-lg-7');
+
+                    correlationChartCard.classList.remove('grid-col-span-lg-12');
+                    correlationChartCard.classList.add('grid-col-span-lg-5');
+                }
+                // Ensure the correlation chart is always visible as a flex container
+                correlationChartCard.style.display = 'flex';
+            };
+            // --- MODIFIED FEATURE LOGIC END ---
+
+            const getRatingColor = (rating, opacity = 1) => ({ Good: `rgba(39, 174, 96, ${opacity})`, Medium: `rgba(243, 156, 18, ${opacity})`, Doubtful: `rgba(231, 76, 60, ${opacity})` }[rating] || `rgba(90, 103, 125, ${opacity})`);
+            
+            const processData = () => {
+                const lowerCaseSearchTerm = state.searchTerm.toLowerCase();
+                let filteredData = testData.filter(item => (state.filter === 'all' || item.rating.toLowerCase() === state.filter) && Object.values(item).some(val => String(val).toLowerCase().includes(lowerCaseSearchTerm)));
+                return filteredData.sort((a, b) => { let valA = a[state.sortColumn], valB = b[state.sortColumn]; if (typeof valA === 'string') { valA = valA.toLowerCase(); valB = valB.toLowerCase(); } if (valA < valB) return state.sortDirection === 'asc' ? -1 : 1; if (valA > valB) return state.sortDirection === 'asc' ? 1 : -1; return 0; });
+            };
+            
+            const renderTable = () => {
+                const data = processData(); const tableHead = document.querySelector('#dataTable thead'); const tableBody = document.querySelector('#dataTable tbody'); const totalPages = Math.ceil(data.length / state.itemsPerPage) || 1;
+                state.currentPage = Math.min(state.currentPage, totalPages); const paginatedData = data.slice((state.currentPage - 1) * state.itemsPerPage, state.currentPage * state.itemsPerPage);
+                if (!tableHead.innerHTML) { const headers = [{ key: 'sno', name: 'S.No' }, { key: 'location', name: 'Location' }, { key: 'upv', name: 'UPV (km/s)' }, { key: 'time', name: 'Time (µs)' }, { key: 'rating', name: 'Rating' }]; tableHead.innerHTML = `<tr>${headers.map(h => `<th data-sort="${h.key}">${h.name} <i class="sort-indicator ph ph-sort-ascending"></i></th>`).join('')}</tr>`; }
+                tableBody.innerHTML = paginatedData.map(item => `<tr><td>${item.sno}</td><td>${item.location}</td><td>${item.upv.toFixed(1)}</td><td>${item.time.toFixed(1)}</td><td><div class="rating-cell rating-${item.rating.toLowerCase()}"><span class="rating-indicator"></span><span>${item.rating}</span></div></td></tr>`).join('');
+                document.querySelectorAll('#dataTable th').forEach(th => { th.classList.toggle('sorted', th.dataset.sort === state.sortColumn); if (th.dataset.sort === state.sortColumn) th.querySelector('i').className = `sort-indicator ph ${state.sortDirection === 'asc' ? 'ph-sort-ascending' : 'ph-sort-descending'}`; });
+                document.getElementById('pageInfo').textContent = `Page ${state.currentPage} of ${totalPages}`; document.getElementById('prevPage').disabled = state.currentPage === 1; document.getElementById('nextPage').disabled = state.currentPage === totalPages;
+            };
+
+            const updateLocationChart = () => {
+                currentUpvChartData = testData.filter(item => state.filter === 'all' || item.rating.toLowerCase() === state.filter);
+                
+                adjustChartLayout(currentUpvChartData.length);
+
+                chartInstances.upvChart.data.labels = currentUpvChartData.map(item => item.location);
+                chartInstances.upvChart.data.datasets[0].data = currentUpvChartData.map(item => item.upv);
+                chartInstances.upvChart.data.datasets[0].backgroundColor = currentUpvChartData.map(item => getRatingColor(item.rating, 0.8));
+                chartInstances.upvChart.data.datasets[0].borderColor = currentUpvChartData.map(item => getRatingColor(item.rating));
+                chartInstances.upvChart.update();
+            };
+            
+            const upvValues = testData.map(item => item.upv); const avgUPV = upvValues.reduce((a, b) => a + b, 0) / upvValues.length;
+            let overallQuality, qualityColor; if (avgUPV >= 4.5) { overallQuality = "Excellent"; qualityColor = getRatingColor("Good"); } else if (avgUPV >= 3.5) { overallQuality = "Good"; qualityColor = getRatingColor("Good"); } else if (avgUPV >= 3.0) { overallQuality = "Medium"; qualityColor = getRatingColor("Medium"); } else { overallQuality = "Doubtful"; qualityColor = getRatingColor("Doubtful"); }
+            document.getElementById('avg-upv').textContent = avgUPV.toFixed(2);
+            document.getElementById('quality-rating').textContent = overallQuality; document.getElementById('quality-rating').style.color = qualityColor;
+            const gauge = document.getElementById('avg-upv-gauge'); setTimeout(() => { gauge.style.strokeDashoffset = 251.2 - (Math.min(avgUPV, 5) / 5 * 251.2); gauge.style.stroke = qualityColor; }, 100);
+            document.getElementById('max-upv').textContent = Math.max(...upvValues).toFixed(1);
+            document.getElementById('min-upv').textContent = Math.min(...upvValues).toFixed(1);
+            const goodCount = testData.filter(d => d.rating === 'Good').length; const mediumCount = testData.filter(d => d.rating === 'Medium').length; const doubtfulCount = testData.filter(d => d.rating === 'Doubtful').length;
+            document.getElementById('total-tests').textContent = testData.length; document.getElementById('good-count').textContent = goodCount; document.getElementById('medium-count').textContent = mediumCount; document.getElementById('doubtful-count').textContent = doubtfulCount;
+            
+            Chart.defaults.font.family = "'Inter', sans-serif"; Chart.defaults.plugins.legend.labels.boxWidth = 12;
+            const getChartThemeColors = () => ({ gridColor: getComputedStyle(document.body).getPropertyValue('--border-color'), textColor: getComputedStyle(document.body).getPropertyValue('--text-secondary'), titleColor: getComputedStyle(document.body).getPropertyValue('--text-primary') });
+            let colors = getChartThemeColors();
+            const zoomOptions = isStaticReport ? {} : { zoom: { wheel: { enabled: true }, drag: { enabled: true }, mode: 'xy' }, pan: { enabled: true, mode: 'xy' } };
+            
+            chartInstances.upvChart = new Chart(document.getElementById('upvChart'), { 
+                type: 'bar', 
+                data: { datasets: [{ label: 'UPV Value (km/sec)', borderWidth: 1 }] }, 
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    scales: { y: { beginAtZero: false, min: Math.floor(Math.min(...upvValues)), grid: { color: colors.gridColor }, ticks: { color: colors.textColor } }, x: { grid: { display: false }, ticks: { color: colors.textColor } } }, 
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const item = currentUpvChartData[context.dataIndex];
+                                    let label = context.dataset.label || '';
+                                    if (label) { label += ': '; }
+                                    if (item) { label += item.upv.toFixed(1); }
+                                    return label;
+                                },
+                                afterLabel: function(context) {
+                                    const item = currentUpvChartData[context.dataIndex];
+                                    if (item) {
+                                        return [
+                                            `Rating: ${item.rating}`,
+                                            `Time: ${item.time.toFixed(1)} µs`
+                                        ];
+                                    }
+                                    return [];
+                                }
+                            }
+                        }
+                    } 
+                } 
+            });
+            chartInstances.correlationChart = new Chart(document.getElementById('correlationChart'), { type: 'scatter', data: { datasets: [{ data: testData.map(item => ({ x: item.time, y: item.upv, rating: item.rating, location: item.location })), backgroundColor: testData.map(item => getRatingColor(item.rating, 0.7)), pointRadius: 7, pointHoverRadius: 10 }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: Math.min(...upvValues) - 0.2, max: Math.max(...upvValues) + 0.2, grid: { color: colors.gridColor }, ticks: { color: colors.textColor }, title: {display: true, text: 'UPV (km/s)', color: colors.titleColor} }, x: { grid: { color: colors.gridColor }, ticks: { color: colors.textColor }, title: {display: true, text: 'Time (µs)', color: colors.titleColor} } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => [`Location: ${ctx.raw.location}`, `Time: ${ctx.raw.x} µs`, `UPV: ${ctx.raw.y} km/s`, `Rating: ${ctx.raw.rating}`] } }, zoom: zoomOptions } } });
+            chartInstances.distributionChart = new Chart(document.getElementById('distributionChart'), { type: 'doughnut', data: { labels: ['Good', 'Medium', 'Doubtful'], datasets: [{ data: [goodCount, mediumCount, doubtfulCount], backgroundColor: [getRatingColor('Good', 0.8), getRatingColor('Medium', 0.8), getRatingColor('Doubtful', 0.8)], borderColor: [getRatingColor('Good'), getRatingColor('Medium'), getRatingColor('Doubtful')], borderWidth: 2 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: colors.textColor } }, tooltip: { callbacks: { label: ctx => `${ctx.label}: ${ctx.raw} (${(ctx.raw / testData.length * 100).toFixed(1)}%)` } } } } });
+            
+            renderTable(); updateLocationChart();
+            
+            const legendContainer = document.getElementById('upv-chart-legend');
+            if (legendContainer) {
+                legendContainer.innerHTML = `
+                    <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--good-color);"></span>Good (>3.5 km/s)</span>
+                    <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--medium-color);"></span>Medium (3.0-3.5 km/s)</span>
+                    <span style="display: flex; align-items: center; gap: 8px;"><span style="width: 12px; height: 12px; border-radius: 50%; background-color: var(--doubtful-color);"></span>Doubtful (&lt;3.0 km/s)</span>
+                `;
+            }
+
+            const themeSwitcher = document.getElementById('themeSwitcher');
+            if(themeSwitcher) {
+                const rethemeCharts = () => { colors = getChartThemeColors(); Object.values(chartInstances).forEach(chart => { if (!chart) return; if (chart.options.scales) Object.values(chart.options.scales).forEach(scale => { scale.grid.color = colors.gridColor; scale.ticks.color = colors.textColor; if (scale.title) scale.title.color = colors.titleColor; }); if (chart.options.plugins.legend) chart.options.plugins.legend.labels.color = colors.textColor; chart.update(); }); };
+                themeSwitcher.onclick = () => { const newTheme = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', newTheme); localStorage.setItem('theme', newTheme); rethemeCharts(); };
+            }
+            
+            document.querySelectorAll('.filter-btn').forEach(button => button.onclick = function() { document.querySelector('.filter-btn.active').classList.remove('active'); this.classList.add('active'); state.filter = this.getAttribute('data-filter'); state.currentPage = 1; updateLocationChart(); renderTable(); });
+            document.getElementById('searchInput').oninput = e => { state.searchTerm = e.target.value; state.currentPage = 1; renderTable(); };
+            document.querySelector('#dataTable thead').onclick = e => { const header = e.target.closest('th'); if (!header?.dataset.sort) return; const sortKey = header.dataset.sort; state.sortDirection = (state.sortColumn === sortKey && state.sortDirection === 'asc') ? 'desc' : 'asc'; state.sortColumn = sortKey; renderTable(); };
+            document.getElementById('prevPage').onclick = () => { if (state.currentPage > 1) { state.currentPage--; renderTable(); } };
+            document.getElementById('nextPage').onclick = () => { const totalPages = Math.ceil(processData().length / state.itemsPerPage); if (state.currentPage < totalPages) { state.currentPage++; renderTable(); } };
+        }
+        
+        function generateStaticReport() {
+            const generateBtn = document.getElementById('generateReportBtn');
+            if (!currentDashboardData) { alert("No data available to generate a report."); return; }
+            generateBtn.disabled = true; generateBtn.innerHTML = `<span><i class="ph ph-spinner ph-spin"></i> Generating...</span>`;
+            
+            let fullHtml = document.documentElement.outerHTML;
+            
+            const dataJsonString = JSON.stringify(currentDashboardData);
+            fullHtml = fullHtml.replace('<!-- EMBEDDED_DATA_PLACEHOLDER -->', dataJsonString);
+            
+            const startIndex = fullHtml.indexOf('<!-- HEADER_CONTROLS_START -->');
+            const endIndex = fullHtml.indexOf('<!-- HEADER_CONTROLS_END -->');
+            if (startIndex !== -1 && endIndex !== -1) {
+                fullHtml = fullHtml.substring(0, startIndex) + fullHtml.substring(endIndex + '<!-- HEADER_CONTROLS_END -->'.length);
+            }
+            
+            const blob = new Blob([fullHtml], { type: 'text/html' });
+            const link = document.createElement('a'); link.href = URL.createObjectURL(blob);
+            const dateStr = new Date().toISOString().slice(0, 10);
+            link.download = `UPV_Dashboard_Report_${dateStr}.html`;
+            document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(link.href);
+            
+            setTimeout(() => { generateBtn.disabled = false; generateBtn.innerHTML = `<span><i class="ph ph-download-simple"></i> Generate Report</span>`; }, 1000);
+        }
+
+        // --- GLOBAL STARTUP LOGIC ---
+        window.addEventListener('load', () => {
+            let embeddedData = null;
+            const embeddedDataElement = document.getElementById('embeddedData');
+            
+            if (embeddedDataElement && embeddedDataElement.textContent.trim() && !embeddedDataElement.textContent.includes('EMBEDDED_DATA_PLACEHOLDER')) {
+                try { 
+                    embeddedData = JSON.parse(embeddedDataElement.textContent);
+                } catch (e) { 
+                    console.error("Failed to parse embedded JSON data:", e); 
+                    showDashboardError("Could not load report. The embedded data is corrupted."); 
+                    return; 
+                }
+            }
+
+            if (embeddedData && Array.isArray(embeddedData) && embeddedData.length > 0) {
+                displayDashboard(embeddedData, true);
+            } else {
+                uploadView.style.display = 'flex';
+                document.getElementById('backToUploadBtn').addEventListener('click', (e) => { e.preventDefault(); window.location.reload(); });
+                document.getElementById('generateReportBtn').addEventListener('click', generateStaticReport);
+            }
+            
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            
+            if (dashboardView.style.display === 'block' && Object.keys(chartInstances).length > 0) {
+                 const themeSwitcher = document.getElementById('themeSwitcher');
+                 if (themeSwitcher) themeSwitcher.onclick();
+            }
+        });
+    </script>
+
+</body></html>
